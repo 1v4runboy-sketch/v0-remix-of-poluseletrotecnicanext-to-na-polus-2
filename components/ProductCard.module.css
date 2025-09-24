@@ -1,0 +1,108 @@
+.card {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  background: var(--card-bg, #111);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.35);
+  border-color: rgba(255,255,255,0.18);
+}
+
+.media {
+  position: relative;
+  aspect-ratio: 4/3;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(0,0,0,0.25));
+}
+.img {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+
+.brand {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,255,255,0.18);
+}
+
+.body {
+  padding: 14px 14px 16px;
+}
+
+.title {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.25;
+  margin: 0 0 6px;
+}
+
+.meta {
+  opacity: .75;
+  font-size: .85rem;
+  margin: 0 0 10px;
+}
+
+.desc {
+  font-size: .9rem;
+  opacity: .85;
+  margin: 0 0 12px;
+}
+
+.variantsBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.toggle {
+  align-self: flex-start;
+  font-size: .85rem;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.06);
+  cursor: pointer;
+}
+.toggle:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+.variants {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 8px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height .25s ease, padding .25s ease;
+  padding: 0 2px;
+}
+
+.variantsOpen {
+  max-height: 240px; /* suficiente para ver várias linhas */
+  padding-bottom: 4px;
+}
+
+.chip {
+  display: inline-block;
+  font-size: .82rem;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px dashed rgba(255,255,255,0.22);
+  background: rgba(255,255,255,0.04);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

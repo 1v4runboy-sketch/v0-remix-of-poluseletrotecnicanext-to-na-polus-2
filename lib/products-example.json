@@ -1,0 +1,121 @@
+{
+  "productStructure": {
+    "description": "Estrutura simplificada dos produtos da Polus Eletrotécnica",
+    "totalProducts": "10000+",
+    "categories": ["Cabos", "Capacitores", "Rolamentos", "Tintas WEG", "Bases Motor", "Acamadores", "Diversos"],
+    "brands": ["WEG", "NSK", "HCH", "JL Capacitores", "CIFA", "Jacuzzi", "iGUi", "Tramar", "Cofibam"]
+  },
+  "productExample": {
+    "id": "cabo-pp-2x25mm-weg",
+    "slug": "cabo-pp-2x25mm-weg",
+    "title": "Cabo PP 2x2,5mm² WEG",
+    "brand": "WEG",
+    "category": "Cabos",
+    "subcategory": "Cabos de Força",
+    "shortDescription": "Cabo de força flexível 2x2,5mm² para instalações industriais",
+    "images": [
+      {
+        "src": "/images/produtos/cabos/cabo-pp-2x25mm-weg.webp",
+        "alt": "Cabo PP 2x2,5mm² WEG"
+      }
+    ],
+    "variants": [
+      {
+        "id": "metro",
+        "label": "Por metro",
+        "unit": "m",
+        "minQty": 1,
+        "stepQty": 1
+      },
+      {
+        "id": "rolo-100m",
+        "label": "Rolo 100m",
+        "unit": "un",
+        "minQty": 1,
+        "stepQty": 1,
+        "attrs": {
+          "metragem": 100
+        }
+      }
+    ],
+    "techSpecs": {
+      "tensao": "750V",
+      "temperatura": "-40°C a +70°C",
+      "norma": "NBR NM 247-3"
+    }
+  },
+  "capacitorExample": {
+    "id": "capacitor-10uf-440v-jl",
+    "slug": "capacitor-10uf-440v-jl",
+    "title": "Capacitor 10µF 440V JL Capacitores",
+    "brand": "JL Capacitores",
+    "category": "Capacitores",
+    "subcategory": "Capacitores de Partida",
+    "shortDescription": "Capacitor eletrolítico para motores monofásicos",
+    "images": [
+      {
+        "src": "/images/produtos/capacitores/capacitor-10uf-440v-jl.webp",
+        "alt": "Capacitor 10µF 440V JL Capacitores"
+      }
+    ],
+    "variants": [
+      {
+        "id": "unidade",
+        "label": "Unidade",
+        "unit": "un",
+        "minQty": 1,
+        "stepQty": 1
+      }
+    ],
+    "techSpecs": {
+      "capacitancia": "10µF",
+      "tensao": "440V",
+      "tipo": "Eletrolítico",
+      "aplicacao": "Motor monofásico"
+    }
+  },
+  "rolamentoExample": {
+    "id": "rolamento-6203-nsk",
+    "slug": "rolamento-6203-nsk",
+    "title": "Rolamento 6203 NSK",
+    "brand": "NSK",
+    "category": "Rolamentos",
+    "subcategory": "Rolamentos Rígidos de Esferas",
+    "shortDescription": "Rolamento rígido de esferas para aplicações industriais",
+    "images": [
+      {
+        "src": "/images/produtos/rolamentos/rolamento-6203-nsk.webp",
+        "alt": "Rolamento 6203 NSK"
+      }
+    ],
+    "variants": [
+      {
+        "id": "unidade",
+        "label": "Unidade",
+        "unit": "un",
+        "minQty": 1,
+        "stepQty": 1
+      }
+    ],
+    "techSpecs": {
+      "codigo": "6203",
+      "diametroInterno": "17mm",
+      "diametroExterno": "40mm",
+      "largura": "12mm",
+      "carga": "9,56 kN"
+    }
+  },
+  "dataStructureNotes": {
+    "variants": "Permite diferentes unidades de venda (metro, unidade, rolo, etc.)",
+    "images": "Todas otimizadas em WebP para performance",
+    "techSpecs": "Especificações técnicas flexíveis por categoria",
+    "slugs": "URLs amigáveis para SEO",
+    "categories": "Hierarquia categoria > subcategoria para organização"
+  },
+  "integrationNotes": {
+    "whatsapp": "Produtos são enviados via WhatsApp com especificações completas",
+    "cart": "Sistema de carrinho com variações e quantidades",
+    "search": "Busca normalizada por título, marca e categoria",
+    "filters": "Filtros por categoria, marca e especificações"
+  }
+}

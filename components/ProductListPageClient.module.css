@@ -1,0 +1,71 @@
+// components/ProductListPageClient.tsx
+'use client';
+
+import { useMemo, useState } from 'react';
+import { buildCatalog } from '../lib/merge-products';
+import { UNIFIED_PRODUCTS } from '../lib/unified-products';
+// seu arquivo original
+import { products as RAW_PRODUCTS } from '../lib/products';
+import ProductGrid from './ProductGrid';
+
+function normalize(s: string) {
+  return (s || '').normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+}
+
+export default function ProductListPageClient() {
+  const [q, setQ] = useState('');
+
+  // catálogo mesclado (unificados + restantes)
+  const all = useMemo(() => buildCatalog(RAW_PRODUCTS || []), []);
+
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    all.forEach((p: any) => p?.category && set.add(p.category));
+    return Array.from(set).sort();
+  }, [all]);
+
+  const [catFilter, setCatFilter] = useState<string>('');
+
+  const filtered = useMemo(() => {
+    let lst = all;
+    if (q) {
+      const nq = normalize(q);
+      lst = lst.filter((p: any) =>
+        normalize(p.title || p.slug).includes(nq) ||
+        normalize(p.category || '').includes(nq) ||
+        normalize(p.subcategory || '').includes(nq)
+      );
+    }
+    if (catFilter) {
+      lst = lst.filter((p: any) => p.category === catFilter);
+    }
+    return lst;
+  }, [all, q, catFilter]);
+
+  return (
+    <div className="space-y-4">
+      {/* Filtros simples */}
+      <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Buscar produtos…"
+          className="w-full sm:max-w-md rounded-lg border border-zinc-300 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 px-3 py-2 outline-none focus:ring-2 focus:ring-sky-500"
+        />
+        <select
+          value={catFilter}
+          onChange={(e) => setCatFilter(e.target.value)}
+          className="rounded-lg border border-zinc-300 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 px-3 py-2"
+        >
+          <option value="">Todas as categorias</option>
+          {categories.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Grade */}
+      <ProductGrid items={filtered} />
+    </div>
+  );
+}
