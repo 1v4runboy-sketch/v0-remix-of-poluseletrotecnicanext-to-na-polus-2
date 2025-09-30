@@ -1,37 +1,27 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 
-export default function ThemeToggle() {
-  const [isDark, setIsDark] = useState(false);
-  const ref = useRef(null);
+interface ThemeToggleProps {
+  toggleTheme: () => void;
+  theme: 'light' | 'dark';
+}
 
-  useEffect(() => {
-    try {
-      const ls = localStorage.getItem('theme');
-      const preferred = ls || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-      const dark = preferred === 'dark';
-      setIsDark(dark);
-      applyTheme(dark ? 'dark' : 'light');
-    } catch {}
-  }, []);
-
-  function applyTheme(theme) {
-    const root = document.documentElement;
-    if (theme === 'dark') root.classList.add('dark'); else root.classList.remove('dark');
-    root.style.colorScheme = theme;
-    try { localStorage.setItem('theme', theme); } catch {}
-  }
-
-  function onChange(e) {
-    const checked = e.target.checked;
-    setIsDark(checked);
-    applyTheme(checked ? 'dark' : 'light');
-  }
-
+export default function ThemeToggle({ toggleTheme, theme }: ThemeToggleProps) {
   return (
-    <label title="Alternar tema">
-      <input ref={ref} type="checkbox" className="theme-checkbox" checked={isDark} onChange={onChange} />
-    </label>
+    <button
+      onClick={toggleTheme}
+      aria-label="Alternar tema"
+      className="inline-flex items-center gap-2 px-3 h-10 rounded-full border border-black/10 dark:border-white/10 bg-white dark:bg-[#0f1a2a] hover:bg-black/5 dark:hover:bg-white/10 transition"
+    >
+      <span className="text-xs font-medium hidden sm:inline">{theme === 'dark' ? 'Dark' : 'Light'}</span>
+      <div className="relative w-10 h-5 rounded-full bg-black/10 dark:bg-white/20">
+        <div
+          className={`absolute top-[2px] h-[16px] w-[16px] rounded-full bg-emerald-500 transition-transform ${
+            theme === 'dark' ? 'translate-x-[22px]' : 'translate-x-[2px]'
+          }`}
+        />
+      </div>
+    </button>
   );
 }

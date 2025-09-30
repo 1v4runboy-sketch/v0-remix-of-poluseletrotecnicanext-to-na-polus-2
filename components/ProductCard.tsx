@@ -1,97 +1,160 @@
 // components/ProductCard.tsx
-'use client';
+'use client'
 
-import Link from 'next/link';
-import Image from 'next/image';
-import { useEffect, useState } from 'react';
-import { prettyTitle } from '../lib/title';
-import { brandLogoFor } from '../lib/brand-logos';
+import * as React from 'react'
+import Link from 'next/link'
+import { useTheme } from 'next-themes'
 
-type Img = { src: string; alt?: string };
-type Variant = { id: string; label: string; images?: Img[] };
-type AnyItem = {
-  kind?: 'group';
-  slug: string;
-  title: string;
-  brand?: string | null;
-  category?: string;
-  subcategory?: string;
-  shortDescription?: string | null;
-  images: Img[];
-  variants?: Variant[];
-};
-
-function pickCoverImage(item: AnyItem): Img {
-  // overrides específicos
-  if (item.slug === 'capacitores-permanentes-250v') {
-    return { src: '/produtos/capacitor-permanente-250v-02uf-1.webp', alt: item.title };
-  }
-  if (item.slug === 'capacitores-permanentes-380-400v') {
-    return { src: '/produtos/capacitor-permanente-380-400vac-02uf-2.webp', alt: item.title };
-  }
-  if (item.images?.length) return item.images[0];
-  return { src: '/polus-logo.svg', alt: item.title || 'Produto' };
+type Props = {
+  slug: string
+  title: string
+  subtitle?: string
+  image?: string
+  href: string
+  brand?: string | null
+  raw?: any
 }
 
-export default function ProductCard({ item }: { item: AnyItem }) {
-  if (!item || !item.slug) return null;
+function pickBrandLogo({ slug = '', raw, resolvedTheme }: { slug?: string; raw?: any; resolvedTheme: string }) {
+  const cat = (raw?.category || '').toLowerCase()
+  const title = (raw?.title || '').toLowerCase()
 
-  const href = `/produto/${item.slug}`;
-  const cover = pickCoverImage(item);
-  const [imgSrc, setImgSrc] = useState(cover.src);
+  // Jacuzzi: logo depende do tema (light/dark)
+  const jacuzziLightDark = {
+    light: '/marcas/lanc-comercial.webp',
+    dark: '/marcas/jacuzzi.webp',
+  }
 
-  useEffect(() => {
-    setImgSrc(cover.src);
-  }, [cover.src]);
+  if (cat.includes('cabos de silicone') || cat.includes('espaguete silicone') || title.includes('fibra de vidro')) {
+    return '/marcas/tramar.webp'
+  }
+  if (cat.includes('cabos lides') || cat.includes('espaguete flexnor') || title.includes('155')) {
+    return '/marcas/cofibam.webp'
+  }
+  if (slug.startsWith('capacitor-permanente-')) {
+    return '/marcas/jl-capacitores.webp'
+  }
+  if (title.includes('fio de cobre')) {
+    return '/marcas/condupasqua-logo.svg'
+  }
+  if (title.includes('fio de alumínio') || title.includes('fio de aluminio')) {
+    return '/marcas/logotipo-sao-marco.webp'
+  }
+  if (
+    title.includes('caixa de ligação') ||
+    title.includes('protetor térmico') ||
+    (title.includes('platinado') && title.includes('original')) ||
+    title.includes('placa de borne') ||
+    title.includes('tinta weg') ||
+    title.includes('verniz weg') ||
+    title.includes('base de motor')
+  ) {
+    return '/marcas/weg.webp'
+  }
+  if (title.includes('paralela') && title.includes('weg')) {
+    return '/marcas/dsantis-logo.webp'
+  }
+  if (title.includes('kohlbach')) {
+    return '/marcas/kohlbach.webp'
+  }
+  if (title.includes('resina calas') || title.includes('calas')) {
+    return '/marcas/lanc-comercial.webp'
+  }
+  if (title.includes('jacuzzi')) {
+    return resolvedTheme === 'dark' ? jacuzziLightDark.dark : jacuzziLightDark.light
+  }
+  if (title.includes('barbante')) {
+    return '/marcas/cifa.webp'
+  }
+  if (title.includes('igui')) {
+    return '/marcas/igui.webp'
+  }
+  if (title.includes('dancor')) {
+    return '/marcas/dancor.webp'
+  }
+  if (title.includes('solda') && title.includes('cobix')) {
+    return '/marcas/cobix.webp'
+  }
 
-  const brandLogo = brandLogoFor(item);
-  const isGroup = item.kind === 'group';
-  const title = prettyTitle(item.title || item.slug);
+  // fallback se houver brand no item
+  const brand = raw?.brand || ''
+  if (brand) return brand
+  return null
+}
+
+export default function ProductCard(props: Props) {
+  const { slug, title, subtitle, image, href, raw } = props
+  const { resolvedTheme } = useTheme()
+  const logo = pickBrandLogo({ slug, raw, resolvedTheme })
 
   return (
-    <Link href={href} className="group block">
-      <article className="relative overflow-hidden rounded-xl border border-zinc-200/70 dark:border-zinc-800/70 bg-white/70 dark:bg-zinc-900/60 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow">
-        <div className="relative w-full aspect-[4/3]">
-          <Image
-            src={imgSrc}
-            alt={cover.alt || title}
-            fill
-            sizes="(max-width: 768px) 100vw, 33vw"
-            className="object-contain object-center p-4 group-hover:scale-[1.02] transition-transform"
-            priority={false}
-            onError={() => setImgSrc('/polus-logo.svg')}
+    <div
+      className="group relative rounded-xl border border-gray-200 bg-white p-3 shadow-sm transition
+                 hover:shadow-md dark:border-white/10 dark:bg-[#0e1730]"
+      role="listitem"
+    >
+      {/* Logo da marca (maior e com contraste) */}
+      {logo && (
+        <div className="absolute left-3 top-3 z-10 rounded bg-white/90 p-1.5 shadow dark:bg-black/40">
+          <img
+            src={logo}
+            alt=""
+            className="h-7 w-auto md:h-8"
+            loading="lazy"
+            decoding="async"
           />
-          {brandLogo && (
-            <div className="absolute left-2 top-2 bg-white/80 dark:bg-black/60 rounded-md px-2 py-1 shadow-sm">
-              <Image
-                src={brandLogo.src}
-                alt={brandLogo.alt}
-                width={64}
-                height={20}
-                className="h-5 w-auto"
-              />
-            </div>
+        </div>
+      )}
+
+      {/* Imagem do produto */}
+      <Link href={href} className="block">
+        <div className="relative flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-lg border border-gray-100 bg-white
+                        dark:border-white/10 dark:bg-[#0b1222]">
+          {image ? (
+            <img
+              src={image}
+              alt={title}
+              className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-[1.02]"
+              loading="lazy"
+              decoding="async"
+            />
+          ) : (
+            <div className="text-xs text-gray-400">Sem imagem</div>
           )}
         </div>
+      </Link>
 
-        <div className="p-3">
-          <h3 className="line-clamp-2 font-semibold text-zinc-900 dark:text-zinc-100 text-sm md:text-[15px]">
-            {title}
-          </h3>
+      {/* Título e subtítulo */}
+      <div className="mt-3 space-y-0.5">
+        <Link href={href} className="line-clamp-2 block text-sm font-semibold text-gray-900 hover:underline
+                                     dark:text-gray-100">
+          {title}
+        </Link>
+        {subtitle ? (
+          <div className="line-clamp-1 text-xs text-gray-500 dark:text-gray-400">{subtitle}</div>
+        ) : null}
+      </div>
 
-          {isGroup && (
-            <p className="mt-1 text-[12px] text-zinc-500 dark:text-zinc-400">
-              {item.variants?.length ?? 0} variação(ões)
-            </p>
-          )}
-
-          {item.shortDescription && (
-            <p className="mt-1 text-[12px] text-zinc-600 dark:text-zinc-400 line-clamp-2">
-              {item.shortDescription}
-            </p>
-          )}
-        </div>
-      </article>
-    </Link>
-  );
+      {/* Ações */}
+      <div className="mt-3 flex gap-2">
+        <Link
+          href={`https://wa.me/551135992935?text=Olá%20Polus!%20Gostaria%20de%20uma%20cotação%20para:%20${encodeURIComponent(
+            title,
+          )}`}
+          target="_blank"
+          className="inline-flex flex-1 items-center justify-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white
+                     hover:bg-green-700"
+        >
+          Pedir cotação
+        </Link>
+        <Link
+          href={href}
+          className="inline-flex items-center justify-center rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-900
+                     hover:bg-gray-50 dark:border-white/10 dark:text-gray-100 dark:hover:bg-[#0d152b]"
+        >
+          Ver detalhes
+        </Link>
+      </div>
+    </div>
+  )
 }

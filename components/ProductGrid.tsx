@@ -1,20 +1,28 @@
 // components/ProductGrid.tsx
-import ProductCard from './ProductCard';
+'use client'
 
-export default function ProductGrid({ items }: { items: any[] }) {
-  if (!items?.length) {
-    return (
-      <div className="text-center text-zinc-600 dark:text-zinc-400 py-12">
-        Nenhum produto encontrado.
-      </div>
-    );
-  }
+import * as React from 'react'
+import ProductCard from './ProductCard'
 
+type CardItem = {
+  slug: string
+  title: string
+  subtitle?: string
+  image?: string
+  brand?: string | null
+  href: string
+  raw?: any
+}
+
+export default function ProductGrid({ items }: { items: CardItem[] }) {
   return (
-    <div className="grid gap-3 sm:gap-4 md:gap-5 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+    <div
+      className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+      role="list"
+    >
       {items.map((it) => (
-        <ProductCard key={it.slug} item={it} />
+        <ProductCard key={it.slug} {...it} />
       ))}
     </div>
-  );
+  )
 }

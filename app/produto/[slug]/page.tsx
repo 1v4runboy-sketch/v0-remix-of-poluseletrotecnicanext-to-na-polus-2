@@ -1,50 +1,81 @@
-// app/produto/[slug]/page.tsx
-import { UNIFIED_PRODUCTS } from '../../../lib/unified-products';
-import { products as RAW_PRODUCTS } from '../../../lib/products';
-import { prettyTitle } from '../../../lib/title';
+// /app/produto/[slug]/page.tsx  (Server Component)
+
 import ProductDetailClient from '../../../components/ProductDetailClient';
-import { notFound } from 'next/navigation';
+import { UNIFIED_PRODUCTS } from '../../../lib/unified-products';
+// Ajuste este import conforme seu projeto:
+import { PRODUCTS as CATALOG } from '../../../lib/products';
 
-export async function generateStaticParams() {
-  // permita SSG para todas as páginas de produto
-  const slugs = [
-    ...UNIFIED_PRODUCTS.map(p => p.slug),
-    ...RAW_PRODUCTS.map(p => p.slug),
-  ];
-  return slugs.map((slug) => ({ slug }));
+type NextParams = { params: { slug: string } };
+
+export function generateStaticParams() {
+  // Opcional: permitir pré-render dos unificados
+  return UNIFIED_PRODUCTS.map((p) => ({ slug: p.slug }));
 }
 
-export async function generateMetadata({ params }: any) {
-  const item =
-    UNIFIED_PRODUCTS.find((p) => p.slug === params.slug) ||
-    RAW_PRODUCTS.find((p) => p.slug === params.slug);
+export default function ProductPage({ params }: NextParams) {
+  const { slug } = params;
 
-  if (!item) return { title: 'Produto | Polus Eletrotécnica' };
+  // 1) Tenta família unificada
+  const family = UNIFIED_PRODUCTS.find((p) => p.slug === slug);
 
-  const title = prettyTitle(item.title || item.slug);
-  return {
-    title: `${title} | Polus`,
-    description: `${title} — catálogo técnico Polus Eletrotécnica.`,
-    openGraph: {
-      title,
-      description: `${title} — catálogo técnico Polus Eletrotécnica.`,
-      images: item.images?.length ? [item.images[0].src] : ['/polus-logo.svg']
-    }
-  };
-}
+  if (family) {
+    const childSlugs = (family.variants || [])
+      .map((v) => v.attrs?.childSlug)
+      .filter(Boolean) as string[];
 
-export default function ProductPage({ params }: { params: { slug: string } }) {
-  const item =
-    UNIFIED_PRODUCTS.find((p) => p.slug === params.slug) ||
-    RAW_PRODUCTS.find((p) => p.slug === params.slug);
+    // Mapa mínimo: slug -> { images, techSpecs, title }
+    const childLookup = Object.fromEntries(
+      childSlugs.map((s) => {
+        const found = CATALOG.find((c: any) => c.slug === s);
+        if (!found) return [s, undefined];
+        const pick = {
+          slug: found.slug,
+          title: found.title,
+          images: found.images || [],
+          techSpecs: found.techSpecs || null,
+        };
+        return [s, pick];
+      })
+    );
 
-  if (!item) return notFound();
+    return (
+      <main className="pb-12">
+        <ProductDetailClient product={family as any} childLookup={childLookup} />
+      </main>
+    );
+  }
 
-  // relacionados: mesma categoria (exclui self)
-  const related = [
-    ...UNIFIED_PRODUCTS,
-    ...RAW_PRODUCTS
-  ].filter((p) => p.slug !== item.slug && p.category === item.category).slice(0, 8);
+  // 2) Fallback para item individual do catálogo
+  const single = CATALOG.find((c: any) => c.slug === slug);
+  if (single) {
+    // Adapta o item individual para o componente
+    const adapted = {
+      slug: single.slug,
+      title: single.title,
+      brand: single.brand || null,
+      category: single.category || '',
+      subcategory: single.subcategory || '',
+      shortDescription: single.shortDescription || '',
+      description: single.description || '',
+      images: single.images || [],
+      variants: [], // item avulso não tem variações
+      techSpecs: single.techSpecs || null,
+    };
 
-  return <ProductDetailClient item={item as any} related={related as any[]} />;
+    return (
+      <main className="pb-12">
+        <ProductDetailClient product={adapted as any} />
+      </main>
+    );
+  }
+
+  // 3) Not found simples
+  return (
+    <main className="mx-auto max-w-3xl px-4 py-16">
+      <h1 className="text-xl font-semibold">Produto não encontrado</h1>
+      <p className="mt-2 text-sm text-neutral-600">
+        O produto solicitado não existe ou foi movido.
+      </p>
+    </main>
+  );
 }
