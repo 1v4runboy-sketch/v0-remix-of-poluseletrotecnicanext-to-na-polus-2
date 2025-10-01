@@ -1,81 +1,83 @@
-// /app/produto/[slug]/page.tsx  (Server Component)
+// app/produto/[slug]/page.tsx
+import { Metadata } from 'next';
+import PdpClient from '../../../components/PdpClient';
+import { getUnifiedBySlug, getSimilarProducts } from '../../../lib/unified-products';
+import { PRODUCTS } from '../../../lib/products';
 
-import ProductDetailClient from '../../../components/ProductDetailClient';
-import { UNIFIED_PRODUCTS } from '../../../lib/unified-products';
-// Ajuste este import conforme seu projeto:
-import { PRODUCTS as CATALOG } from '../../../lib/products';
-
-type NextParams = { params: { slug: string } };
-
-export function generateStaticParams() {
-  // Opcional: permitir pré-render dos unificados
-  return UNIFIED_PRODUCTS.map((p) => ({ slug: p.slug }));
+function pickEntity(slug: string) {
+  // 1) Família unificada
+  const uni = getUnifiedBySlug(slug);
+  if (uni) {
+    return {
+      type: 'unified',
+      slug: uni.slug,
+      title: uni.title,
+      brandLogo: uni.brandLogo,
+      category: uni.category,
+      subcategory: uni.subcategory,
+      images: uni.images,
+      variants: uni.variants,
+      tech: uni.tech,
+      description: uni.description,
+      variantImagesMap: (uni as any).variantImagesMap,
+    };
+  }
+  // 2) Produto individual
+  const single = (PRODUCTS as any[]).find((p) => p.slug === slug);
+  if (single) {
+    return {
+      type: 'single',
+      slug: single.slug,
+      title: single.title || single.name,
+      brandLogo: single.brandLogo,
+      category: single.category,
+      subcategory: single.subcategory,
+      images: (single.images || []).map((s: string) => ({ src: s })),
+      variants: single.variants || [],
+      tech: single.tech || single.specs,
+      description: single.description || single.summary,
+      variantImagesMap: (single as any).variantImagesMap,
+    };
+  }
+  return null;
 }
 
-export default function ProductPage({ params }: NextParams) {
-  const { slug } = params;
-
-  // 1) Tenta família unificada
-  const family = UNIFIED_PRODUCTS.find((p) => p.slug === slug);
-
-  if (family) {
-    const childSlugs = (family.variants || [])
-      .map((v) => v.attrs?.childSlug)
-      .filter(Boolean) as string[];
-
-    // Mapa mínimo: slug -> { images, techSpecs, title }
-    const childLookup = Object.fromEntries(
-      childSlugs.map((s) => {
-        const found = CATALOG.find((c: any) => c.slug === s);
-        if (!found) return [s, undefined];
-        const pick = {
-          slug: found.slug,
-          title: found.title,
-          images: found.images || [],
-          techSpecs: found.techSpecs || null,
-        };
-        return [s, pick];
-      })
-    );
-
-    return (
-      <main className="pb-12">
-        <ProductDetailClient product={family as any} childLookup={childLookup} />
-      </main>
-    );
-  }
-
-  // 2) Fallback para item individual do catálogo
-  const single = CATALOG.find((c: any) => c.slug === slug);
-  if (single) {
-    // Adapta o item individual para o componente
-    const adapted = {
-      slug: single.slug,
-      title: single.title,
-      brand: single.brand || null,
-      category: single.category || '',
-      subcategory: single.subcategory || '',
-      shortDescription: single.shortDescription || '',
-      description: single.description || '',
-      images: single.images || [],
-      variants: [], // item avulso não tem variações
-      techSpecs: single.techSpecs || null,
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const entity = pickEntity(params.slug);
+  if (!entity) {
+    return {
+      title: 'Produto não encontrado | Polus',
+      description: 'O produto solicitado não foi encontrado.',
     };
+  }
+  return {
+    title: `${entity.title} | Polus Eletrotécnica`,
+    description: entity.description || 'Catálogo técnico Polus Eletrotécnica',
+    openGraph: {
+      title: `${entity.title} | Polus Eletrotécnica`,
+      description: entity.description || '',
+      images: entity.images?.length ? [entity.images[0].src] : ['/polus-logo.svg'],
+    },
+  };
+}
 
+export default function ProductPage({ params }: { params: { slug: string } }) {
+  const entity = pickEntity(params.slug);
+  if (!entity) {
     return (
-      <main className="pb-12">
-        <ProductDetailClient product={adapted as any} />
+      <main className="max-w-6xl mx-auto px-3 md:px-6 lg:px-8 py-6">
+        <div className="rounded-lg border p-6 text-center text-zinc-600 dark:text-zinc-300">
+          Produto não encontrado.
+        </div>
       </main>
     );
   }
 
-  // 3) Not found simples
+  const similar = getSimilarProducts(params.slug);
+
   return (
-    <main className="mx-auto max-w-3xl px-4 py-16">
-      <h1 className="text-xl font-semibold">Produto não encontrado</h1>
-      <p className="mt-2 text-sm text-neutral-600">
-        O produto solicitado não existe ou foi movido.
-      </p>
+    <main className="max-w-6xl mx-auto px-3 md:px-6 lg:px-8 py-6">
+      <PdpClient entity={entity as any} similar={similar as any} />
     </main>
   );
 }
